@@ -1,3 +1,19 @@
+/**
+* @fileoverview 优化代码性能的一些公共方法
+* @module utils/PerformanceOptimizations
+*
+* @description
+* 优化代码性能的一些公共方法、部分使用到了，部分未使用到
+*
+* @author 马扬
+* @date 2025-03-25
+*
+* @dependencies
+* - 无、基础方法库
+*
+* @example
+*  引入使用即可
+*/
 
 // eslint-disable-next-line no-unused-vars
 import { nextTick } from 'vue';

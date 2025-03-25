@@ -1,3 +1,20 @@
+/**
+* @fileoverview 项目入口
+* @module App
+*
+* @description
+* 项目入口文件
+*
+* @author 马扬
+* @date 2025-03-25
+*
+* @dependencies
+* - Vue 3.x
+*
+* @example
+*  项目入口文件
+*/
+
 <template>
   <div class="app">
     <div class="toolbar">
@@ -25,7 +42,7 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import DivEditor from './components/DivEditor.vue';
-import { useOptimizedHistory } from './components/PerformanceOptimizations';
+import { useOptimizedHistory } from './utils/PerformanceOptimizations';
 
 export default {
   name: 'App',
