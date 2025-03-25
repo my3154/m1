@@ -3,54 +3,121 @@
 <template>
   <div class="editor-container">
     <div class="element-area">
-      <div class="template-element" @mousedown="startDragNewElement"
-        :style="{ backgroundColor: 'lightblue', width: '100px', height: '50px' }">
+      <div
+        class="template-element"
+        @mousedown="startDragNewElement"
+        :style="{
+          backgroundColor: 'lightblue',
+          width: '100px',
+          height: '50px',
+        }"
+      >
         拖动我
       </div>
     </div>
 
-    <div class="canvas-area" ref="canvasRef" @mousedown="onCanvasMouseDown" @mousemove="onCanvasMouseMove"
-      @mouseup="onCanvasMouseUp" @keydown.ctrl="onCtrlKeyDown" @keyup.ctrl="onCtrlKeyUp" tabindex="0">
-      <div v-for="div in divs" :key="div.id" class="canvas-element"
-        :class="{ 'selected': selectedDivIds.includes(div.id), 'parent': hasChildren(div.id) }"
-        :style="getDivStyle(div)" :data-id="div.id" :ref="el => { if (el) divRefs[div.id] = el }">
-        <div v-if="selectedDivIds.includes(div.id)" class="resize-handle top-left"
-          @mousedown.stop="startResize(div.id, 'top-left', $event)"></div>
-        <div v-if="selectedDivIds.includes(div.id)" class="resize-handle top-right"
-          @mousedown.stop="startResize(div.id, 'top-right', $event)"></div>
-        <div v-if="selectedDivIds.includes(div.id)" class="resize-handle bottom-left"
-          @mousedown.stop="startResize(div.id, 'bottom-left', $event)"></div>
-        <div v-if="selectedDivIds.includes(div.id)" class="resize-handle bottom-right"
-          @mousedown.stop="startResize(div.id, 'bottom-right', $event)"></div>
-        <div v-if="selectedDivIds.includes(div.id)" class="rotation-handle"
-          @mousedown.stop="startRotation(div.id, $event)"></div>
+    <div
+      class="canvas-area"
+      ref="canvasRef"
+      @mousedown="onCanvasMouseDown"
+      @mousemove="onCanvasMouseMove"
+      @mouseup="onCanvasMouseUp"
+      @keydown.ctrl="onCtrlKeyDown"
+      @keyup.ctrl="onCtrlKeyUp"
+      tabindex="0"
+    >
+      <div
+        v-for="div in divs"
+        :key="div.id"
+        class="canvas-element"
+        :class="{
+          selected: selectedDivIds.includes(div.id),
+          parent: hasChildren(div.id),
+        }"
+        :style="getDivStyle(div)"
+        :data-id="div.id"
+        :ref="
+          (el) => {
+            if (el) divRefs[div.id] = el;
+          }
+        "
+      >
+        <div
+          v-if="selectedDivIds.includes(div.id)"
+          class="resize-handle top-left"
+          @mousedown.stop="startResize(div.id, 'top-left', $event)"
+        ></div>
+        <div
+          v-if="selectedDivIds.includes(div.id)"
+          class="resize-handle top-right"
+          @mousedown.stop="startResize(div.id, 'top-right', $event)"
+        ></div>
+        <div
+          v-if="selectedDivIds.includes(div.id)"
+          class="resize-handle bottom-left"
+          @mousedown.stop="startResize(div.id, 'bottom-left', $event)"
+        ></div>
+        <div
+          v-if="selectedDivIds.includes(div.id)"
+          class="resize-handle bottom-right"
+          @mousedown.stop="startResize(div.id, 'bottom-right', $event)"
+        ></div>
+        <div
+          v-if="selectedDivIds.includes(div.id)"
+          class="rotation-handle"
+          @mousedown.stop="startRotation(div.id, $event)"
+        ></div>
       </div>
     </div>
 
     <div class="property-panel" v-if="selectedDivIds.length === 1">
       <div class="property-row">
         <label>宽:</label>
-        <input type="number" v-model.number="selectedDiv.width" @change="updateProperty('width')">
+        <input
+          type="number"
+          v-model.number="selectedDiv.width"
+          @change="updateProperty('width')"
+        />
       </div>
       <div class="property-row">
         <label>高:</label>
-        <input type="number" v-model.number="selectedDiv.height" @change="updateProperty('height')">
+        <input
+          type="number"
+          v-model.number="selectedDiv.height"
+          @change="updateProperty('height')"
+        />
       </div>
       <div class="property-row">
         <label>X:</label>
-        <input type="number" v-model.number="selectedDiv.x" @change="updateProperty('x')">
+        <input
+          type="number"
+          v-model.number="selectedDiv.x"
+          @change="updateProperty('x')"
+        />
       </div>
       <div class="property-row">
         <label>Y:</label>
-        <input type="number" v-model.number="selectedDiv.y" @change="updateProperty('y')">
+        <input
+          type="number"
+          v-model.number="selectedDiv.y"
+          @change="updateProperty('y')"
+        />
       </div>
       <div class="property-row">
         <label>旋转:</label>
-        <input type="number" v-model.number="selectedDiv.rotation" @change="updateProperty('rotation')">
+        <input
+          type="number"
+          v-model.number="selectedDiv.rotation"
+          @change="updateProperty('rotation')"
+        />
       </div>
       <div class="property-row">
         <label>颜色:</label>
-        <input type="color" v-model="selectedDiv.color" @change="updateProperty('color')">
+        <input
+          type="color"
+          v-model="selectedDiv.color"
+          @change="updateProperty('color')"
+        />
       </div>
       <div class="property-row" v-if="selectedDiv.parentId">
         <label>父ID:</label>
@@ -62,10 +129,10 @@
 </template>
 
 <script>
-import { ref, computed, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, reactive, onMounted, onBeforeUnmount } from "vue";
 
 export default {
-  name: 'DivEditor',
+  name: "DivEditor",
   setup() {
     const canvasRef = ref(null);
     const divs = ref([]);
@@ -74,7 +141,7 @@ export default {
 
     // 检查元素是否有子元素
     const hasChildren = (divId) => {
-      return divs.value.some(div => div.parentId === divId);
+      return divs.value.some((div) => div.parentId === divId);
     };
     const selectedDivIds = ref([]);
     const undoStack = ref([]);
@@ -99,15 +166,15 @@ export default {
     const rotateStartAngle = ref(0);
     const selectedDiv = computed(() => {
       if (selectedDivIds.value.length !== 1) return null;
-      return divs.value.find(div => div.id === selectedDivIds.value[0]);
+      return divs.value.find((div) => div.id === selectedDivIds.value[0]);
     });
     // eslint-disable-next-line no-unused-vars
     const getAncestors = (divId) => {
       const result = [];
-      let currentDiv = divs.value.find(div => div.id === divId);
+      let currentDiv = divs.value.find((div) => div.id === divId);
 
       while (currentDiv && currentDiv.parentId) {
-        const parent = divs.value.find(div => div.id === currentDiv.parentId);
+        const parent = divs.value.find((div) => div.id === currentDiv.parentId);
         if (parent) {
           result.push(parent);
           currentDiv = parent;
@@ -120,7 +187,7 @@ export default {
     };
     const getDescendants = (divId) => {
       const result = [];
-      const directChildren = divs.value.filter(div => div.parentId === divId);
+      const directChildren = divs.value.filter((div) => div.parentId === divId);
 
       result.push(...directChildren);
 
@@ -134,7 +201,7 @@ export default {
     // 辅助函数：递归移动所有子元素
     // 修改移动子元素的方法，确保只根据初始记录的位置计算移动
     const moveChildrenWithParent = (parentId, deltaX, deltaY) => {
-      const childDivs = divs.value.filter(div => div.parentId === parentId);
+      const childDivs = divs.value.filter((div) => div.parentId === parentId);
 
       for (const childDiv of childDivs) {
         // 只使用初始位置加上偏移量，避免累积效应
@@ -143,7 +210,10 @@ export default {
           childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
         } else {
           // 替换为：记录当前位置作为起始位置
-          dragStartPositions.value[childDiv.id] = { x: childDiv.x, y: childDiv.y };
+          dragStartPositions.value[childDiv.id] = {
+            x: childDiv.x,
+            y: childDiv.y,
+          };
           childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
           childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
         }
@@ -178,7 +248,11 @@ export default {
       const y = event.clientY - canvasRect.top;
 
       // 随机生成一个有效的十六进制颜色
-      const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      const randomColor =
+        "#" +
+        Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0");
       const newDiv = {
         id: nextId.value++,
         x,
@@ -187,7 +261,7 @@ export default {
         height: 50,
         rotation: 0,
         color: randomColor,
-        parentId: null
+        parentId: null,
       };
 
       saveStateForUndo();
@@ -200,22 +274,22 @@ export default {
       dragStartY.value = event.clientY;
 
       dragStartPositions.value = {
-        [newDiv.id]: { x: newDiv.x, y: newDiv.y }
+        [newDiv.id]: { x: newDiv.x, y: newDiv.y },
       };
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
     };
 
     const onCanvasMouseDown = (event) => {
       if (event.button !== 0) return;
 
-      const target = event.target.closest('.canvas-element');
+      const target = event.target.closest(".canvas-element");
 
       if (target) {
         if (
-          event.target.classList.contains('resize-handle') ||
-          event.target.classList.contains('rotation-handle')
+          event.target.classList.contains("resize-handle") ||
+          event.target.classList.contains("rotation-handle")
         ) {
           // 这些事件在各自的处理函数中处理
           return;
@@ -225,7 +299,9 @@ export default {
         dragTarget.value = divId;
         if (event.shiftKey) {
           if (selectedDivIds.value.includes(divId)) {
-            selectedDivIds.value = selectedDivIds.value.filter(id => id !== divId);
+            selectedDivIds.value = selectedDivIds.value.filter(
+              (id) => id !== divId
+            );
           } else {
             selectedDivIds.value.push(divId);
           }
@@ -239,186 +315,175 @@ export default {
         dragStartPositions.value = {};
 
         for (const id of draggedDivIds.value) {
-          const div = divs.value.find(d => d.id === id);
+          const div = divs.value.find((d) => d.id === id);
           if (div) {
             dragStartPositions.value[id] = { x: div.x, y: div.y };
 
             // 同时记录所有子元素的起始位置，以便它们能与父元素同步移动
             const children = getDescendants(id);
             for (const childId of children) {
-              const childDiv = divs.value.find(d => d.id === childId.id || d.id === childId);
+              const childDiv = divs.value.find(
+                (d) => d.id === childId.id || d.id === childId
+              );
               if (childDiv) {
-                dragStartPositions.value[childDiv.id] = { x: childDiv.x, y: childDiv.y };
+                dragStartPositions.value[childDiv.id] = {
+                  x: childDiv.x,
+                  y: childDiv.y,
+                };
               }
             }
           }
         }
 
         // 设置全局事件监听器
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
         event.preventDefault();
       } else {
         selectedDivIds.value = [];
       }
     };
-    const onCanvasMouseMove = () => {
-    };
+    const onCanvasMouseMove = () => {};
 
-    const onCanvasMouseUp = () => {
-    };
+    const onCanvasMouseUp = () => {};
     const onMouseMove = (event) => {
-      if (!isDragging.value && !isResizing.value && !isRotating.value) return;
+  console.log("onMouseMove");
+  if (!isDragging.value && !isResizing.value && !isRotating.value) return;
 
-      if (isDragging.value) {
-        const deltaX = event.clientX - dragStartX.value;
-        const deltaY = event.clientY - dragStartY.value;
-        // 首先处理被直接拖动的元素
-        for (const id of draggedDivIds.value) {
-          const div = divs.value.find(d => d.id === id);
-          if (!div) continue;
-          // 在onMouseMove函数中，修改处理子元素在父元素内移动的逻辑
-          if (div.parentId !== null && !isCtrlPressed.value) {
-            const parent = divs.value.find(d => d.id === div.parentId);
-            if (!parent) continue;
-            console.log(parent, 'parent');
+  if (isDragging.value) {
+    const deltaX = event.clientX - dragStartX.value;
+    const deltaY = event.clientY - dragStartY.value;
 
-            // 计算基于初始位置的新相对坐标
-            const newX = dragStartPositions.value[id].x + deltaX;
-            const newY = dragStartPositions.value[id].y + deltaY;
+    // 首先处理被直接拖动的元素
+    for (const id of draggedDivIds.value) {
+      const div = divs.value.find((d) => d.id === id);
+      if (!div) continue;
 
-            // 边界限制 - 考虑父元素的当前状态
-            // 由于子元素坐标是相对于父元素的，所以只需要确保：
-            // 1. 左上角不小于(0,0)
-            // 2. 右下角不超过父元素尺寸(parent.width, parent.height)
-            const minX = parent.x;
-            const minY = parent.y;
-            const maxX = parent.width - div.width + parent.x;
-            const maxY = parent.height - div.height + parent.y;
+      if (div.parentId !== null && !isCtrlPressed.value) {
+        const parent = divs.value.find((d) => d.id === div.parentId);
+        if (!parent) continue;
+        
+        console.log(parent, "parent");
 
-            // 如果父元素有旋转，需要特殊处理边界检查
-            if (parent.rotation !== 0) {
-              // 将要移动到的坐标转换为"旋转前"的坐标系进行边界检查
-              const rad = -parent.rotation * (Math.PI / 180);
-              const cos = Math.cos(rad);
-              const sin = Math.sin(rad);
+        // 计算基于初始位置的新相对坐标
+        const newX = dragStartPositions.value[id].x + deltaX;
+        const newY = dragStartPositions.value[id].y + deltaY;
 
-              // 转换新坐标到非旋转状态
-              const rotatedX = newX * cos - newY * sin;
-              const rotatedY = newX * sin + newY * cos;
+        // 边界限制 - 考虑父元素的当前状态
+        const minX = parent.x;
+        const minY = parent.y;
+        const maxX = parent.width - div.width + parent.x;
+        const maxY = parent.height - div.height + parent.y;
 
-              // 应用边界限制
-              const constrainedX = Math.max(minX, Math.min(maxX, rotatedX));
-              const constrainedY = Math.max(minY, Math.min(maxY, rotatedY));
+        // 如果父元素有旋转，需要特殊处理边界检查
+        if (parent.rotation !== 0) {
+          console.log("parent.rotation", parent.rotation);
+          // 将要移动到的坐标转换为"旋转前"的坐标系进行边界检查
+          const rad = -parent.rotation * (Math.PI / 180);
+          const cos = Math.cos(rad);
+          const sin = Math.sin(rad);
 
-              // 转换回旋转状态
-              const finalRad = parent.rotation * (Math.PI / 180);
-              const finalCos = Math.cos(finalRad);
-              const finalSin = Math.sin(finalRad);
+          // 转换新坐标到非旋转状态
+          const rotatedX = newX * cos - newY * sin;
+          const rotatedY = newX * sin + newY * cos;
 
-              div.x = constrainedX * finalCos - constrainedY * finalSin;
-              div.y = constrainedX * finalSin + constrainedY * finalCos;
-            } else {
-              // 父元素没有旋转，直接应用边界限制
-              div.x = Math.max(minX, Math.min(maxX, newX));
-              div.y = Math.max(minY, Math.min(maxY, newY));
-            }
-          } else {
-            div.x = dragStartPositions.value[id].x + deltaX;
-            div.y = dragStartPositions.value[id].y + deltaY;
+          // 应用边界限制
+          const constrainedX = Math.max(minX, Math.min(maxX, rotatedX));
+          const constrainedY = Math.max(minY, Math.min(maxY, rotatedY));
 
-            // 如果是父元素在移动，所有子元素必须跟着移动
-            moveChildrenWithParent(id, deltaX, deltaY);
-          }
+          // 转换回旋转状态
+          const finalRad = parent.rotation * (Math.PI / 180);
+          const finalCos = Math.cos(finalRad);
+          const finalSin = Math.sin(finalRad);
+
+          div.x = constrainedX * finalCos - constrainedY * finalSin;
+          div.y = constrainedX * finalSin + constrainedY * finalCos;
+        } else {
+          // 父元素没有旋转，直接应用边界限制
+          div.x = Math.max(minX, Math.min(maxX, newX));
+          div.y = Math.max(minY, Math.min(maxY, newY));
         }
-      }
+      } else {
+        div.x = dragStartPositions.value[id].x + deltaX;
+        div.y = dragStartPositions.value[id].y + deltaY;
 
-      else if (isResizing.value) {
-        const div = divs.value.find(d => d.id === resizeDivId.value);
-        if (!div) return;
-
-        const deltaX = event.clientX - resizeStartX.value;
-        const deltaY = event.clientY - resizeStartY.value;
-
-        // 计算调整大小时的新宽高
-        let newWidth = div.width;
-        let newHeight = div.height;
-        let newX = div.x;
-        let newY = div.y;
-        switch (resizeHandle.value) {
-          case 'top-left':
-            newWidth = Math.max(10, resizeStartWidth.value - deltaX);
-            newHeight = Math.max(10, resizeStartHeight.value - deltaY);
-            newX = div.x + (div.width - newWidth);
-            newY = div.y + (div.height - newHeight);
-            break;
-          case 'top-right':
-            newWidth = Math.max(10, resizeStartWidth.value + deltaX);
-            newHeight = Math.max(10, resizeStartHeight.value - deltaY);
-            newY = div.y + (div.height - newHeight);
-            break;
-          case 'bottom-left':
-            newWidth = Math.max(10, resizeStartWidth.value - deltaX);
-            newHeight = Math.max(10, resizeStartHeight.value + deltaY);
-            newX = div.x + (div.width - newWidth);
-            break;
-          case 'bottom-right':
-            newWidth = Math.max(10, resizeStartWidth.value + deltaX);
-            newHeight = Math.max(10, resizeStartHeight.value + deltaY);
-            break;
-        }
-
-        console.log(newWidth, newHeight, newX, newY, 111);
-
-        // 应用新的尺寸和位置
-        div.width = newWidth;
-        div.height = newHeight;
-        div.x = newX;
-        div.y = newY;
-         // 如果是子元素，确保它不超出父元素边界
-  if (div.parentId !== null) {
-    const parent = divs.value.find(d => d.id === div.parentId);
-    if (parent) {
-      // 确保x坐标不小于0
-      if (div.x < 0) {
-        div.width += div.x; // 减小宽度以适应
-        div.x = 0;
+        // 如果是父元素在移动，所有子元素必须跟着移动
+        moveChildrenWithParent(id, deltaX, deltaY);
       }
-      
-      // 确保y坐标不小于0
-      if (div.y < 0) {
-        div.height += div.y; // 减小高度以适应
-        div.y = 0;
-      }
-      
-      // 确保不超出父元素右边界
-      if (div.x + div.width > parent.width) {
-        div.width = parent.width - div.x;
-      }
-      
-      // 确保不超出父元素下边界
-      if (div.y + div.height > parent.height) {
-        div.height = parent.height - div.y;
-      }
-      
-      // 确保最小尺寸
-      div.width = Math.max(10, div.width);
-      div.height = Math.max(10, div.height);
     }
-  }
-}else if (isRotating.value) {
-        const div = divs.value.find(d => d.id === rotateDivId.value);
-        if (!div) return;
-        const divEl = divRefs[div.id];
-        if (!divEl) return;
+  } else if (isResizing.value) {
+    const div = divs.value.find((d) => d.id === resizeDivId.value);
+    if (!div) return;
 
-        const rect = divEl.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX) * (180 / Math.PI);
-        div.rotation = angle + 90;
+    const deltaX = event.clientX - resizeStartX.value;
+    const deltaY = event.clientY - resizeStartY.value;
+
+    // 计算调整大小时的新宽高
+    let newWidth = div.width;
+    let newHeight = div.height;
+    let newX = div.x;
+    let newY = div.y;
+    switch (resizeHandle.value) {
+      case "top-left":
+        newWidth = Math.max(10, resizeStartWidth.value - deltaX);
+        newHeight = Math.max(10, resizeStartHeight.value - deltaY);
+        newX = div.x + (div.width - newWidth);
+        newY = div.y + (div.height - newHeight);
+        break;
+      case "top-right":
+        newWidth = Math.max(10, resizeStartWidth.value + deltaX);
+        newHeight = Math.max(10, resizeStartHeight.value - deltaY);
+        newY = div.y + (div.height - newHeight);
+        break;
+      case "bottom-left":
+        newWidth = Math.max(10, resizeStartWidth.value - deltaX);
+        newHeight = Math.max(10, resizeStartHeight.value + deltaY);
+        newX = div.x + (div.width - newWidth);
+        break;
+      case "bottom-right":
+        newWidth = Math.max(10, resizeStartWidth.value + deltaX);
+        newHeight = Math.max(10, resizeStartHeight.value + deltaY);
+        break;
+    }
+
+    // 如果子元素有父元素，确保不超过父元素的大小
+    if (div.parentId !== null) {
+      const parent = divs.value.find((d) => d.id === div.parentId);
+      if (parent) {
+        newWidth = Math.min(newWidth, parent.width - (newX - parent.x));
+        newHeight = Math.min(newHeight, parent.height - (newY - parent.y));
+
+        // 确保宽度和高度不会超出父元素
+        newX = Math.max(parent.x, newX);
+        newY = Math.max(parent.y, newY);
       }
-    };
+    }
+
+    // 确保最小尺寸
+    newWidth = Math.max(10, newWidth);
+    newHeight = Math.max(10, newHeight);
+
+    // 应用新的尺寸和位置
+    div.width = newWidth;
+    div.height = newHeight;
+    div.x = newX;
+    div.y = newY;
+  } else if (isRotating.value) {
+    const div = divs.value.find((d) => d.id === rotateDivId.value);
+    if (!div) return;
+    const divEl = divRefs[div.id];
+    if (!divEl) return;
+
+    const rect = divEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const angle =
+      Math.atan2(event.clientY - centerY, event.clientX - centerX) *
+      (180 / Math.PI);
+    div.rotation = angle + 90;
+  }
+};
+
     const onMouseUp = () => {
       if (isDragging.value) {
         if (draggedDivIds.value.length > 0) {
@@ -429,7 +494,7 @@ export default {
 
           // 处理拖动结束时的元素嵌套关系
           for (const id of draggedDivIds.value) {
-            const div = divs.value.find(d => d.id === id);
+            const div = divs.value.find((d) => d.id === id);
             if (!div) continue;
 
             // 如果按住Ctrl键，则将元素从父元素中分离
@@ -449,9 +514,10 @@ export default {
             // 如果没有按Ctrl键，并且不在拖出父元素，检查当前元素是否应该放入其他元素中
             if (!isCtrlPressed.value && div.parentId === null) {
               // 查找可能的父元素（不包括自己和其后代）
-              const potentialParents = divs.value.filter(potentialParent =>
-                potentialParent.id !== id &&
-                !getDescendants(id).includes(potentialParent)
+              const potentialParents = divs.value.filter(
+                (potentialParent) =>
+                  potentialParent.id !== id &&
+                  !getDescendants(id).includes(potentialParent)
               );
 
               // 检查是否在某个元素内部
@@ -486,9 +552,9 @@ export default {
                   const offsetY = divCenterY - parentCenterY;
                   console.log(offsetX, offsetY);
 
-
                   // 考虑父元素的旋转角度
-                  const parentRotation = potentialParent.rotation * (Math.PI / 180);
+                  const parentRotation =
+                    potentialParent.rotation * (Math.PI / 180);
                   const cos = Math.cos(-parentRotation);
                   const sin = Math.sin(-parentRotation);
 
@@ -537,8 +603,8 @@ export default {
       rotateStartAngle.value = 0;
 
       // 移除全局事件监听器
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
     };
 
     const onCtrlKeyDown = () => {
@@ -552,12 +618,11 @@ export default {
     const startResize = (divId, handle, event) => {
       event.preventDefault();
       event.stopPropagation();
-
       isResizing.value = true;
       resizeDivId.value = divId;
       resizeHandle.value = handle;
 
-      const div = divs.value.find(d => d.id === divId);
+      const div = divs.value.find((d) => d.id === divId);
       if (!div) return;
 
       // 保存当前鼠标位置，不仅仅是div位置
@@ -568,8 +633,10 @@ export default {
       resizeStartWidth.value = div.width;
       resizeStartHeight.value = div.height;
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      console.log("startResize", divId, handle, event, div);
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
     };
 
     const startRotation = (divId, event) => {
@@ -579,13 +646,13 @@ export default {
       isRotating.value = true;
       rotateDivId.value = divId;
 
-      const div = divs.value.find(d => d.id === divId);
+      const div = divs.value.find((d) => d.id === divId);
       if (!div) return;
 
       rotateStartAngle.value = div.rotation;
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
     };
 
     const getDivStyle = (div) => {
@@ -597,7 +664,7 @@ export default {
         let nestingLevel = 0;
         while (currentDiv.parentId) {
           nestingLevel++;
-          currentDiv = divs.value.find(d => d.id === currentDiv.parentId);
+          currentDiv = divs.value.find((d) => d.id === currentDiv.parentId);
           if (!currentDiv) break;
         }
         // 每一层嵌套增加10的z-index
@@ -608,24 +675,24 @@ export default {
       const selectionBonus = selectedDivIds.value.includes(div.id) ? 1000 : 0;
 
       return {
-        position: 'absolute',
+        position: "absolute",
         left: `${div.x}px`,
         top: `${div.y}px`,
         width: `${div.width}px`,
         height: `${div.height}px`,
         transform: `rotate(${div.rotation}deg)`,
-        backgroundColor: div.color || '#cccccc',
-        border: '1px solid #888',
-        boxSizing: 'border-box',
-        overflow: 'visible',
-        zIndex: baseZIndex + selectionBonus
+        backgroundColor: div.color || "#cccccc",
+        border: "1px solid #888",
+        boxSizing: "border-box",
+        overflow: "visible",
+        zIndex: baseZIndex + selectionBonus,
       };
     };
 
     const updateProperty = () => {
       if (selectedDivIds.value.length !== 1) return;
 
-      const div = divs.value.find(d => d.id === selectedDivIds.value[0]);
+      const div = divs.value.find((d) => d.id === selectedDivIds.value[0]);
       if (!div) return;
 
       saveStateForUndo();
@@ -638,28 +705,28 @@ export default {
 
       for (const id of selectedDivIds.value) {
         divsToDelete.add(id);
-        getDescendants(id).forEach(div => divsToDelete.add(div.id));
+        getDescendants(id).forEach((div) => divsToDelete.add(div.id));
       }
-      divs.value = divs.value.filter(div => !divsToDelete.has(div.id));
+      divs.value = divs.value.filter((div) => !divsToDelete.has(div.id));
       selectedDivIds.value = [];
     };
     const handleKeyDown = (event) => {
-      if (event.ctrlKey && event.key === 'z') {
+      if (event.ctrlKey && event.key === "z") {
         event.preventDefault();
         undo();
       }
-      if (event.ctrlKey && event.key === 'y') {
+      if (event.ctrlKey && event.key === "y") {
         event.preventDefault();
         redo();
       }
     };
     onMounted(() => {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     });
     onBeforeUnmount(() => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
     });
 
     return {
@@ -686,9 +753,9 @@ export default {
       updateProperty,
       deleteSelectedDivs,
       undo,
-      redo
+      redo,
     };
-  }
+  },
 };
 </script>
 
