@@ -38,7 +38,7 @@
       <hr><br>
       <p>&nbsp; &nbsp; 移动父元素后会暂时覆盖其所有的子元素，点击其他地方（退出编辑状态）即可恢复</p><br>
       <hr><br>
-      <button :style="{
+      <!-- <button :style="{
         backgroundColor: 'lightcoral',
         width: '100px',
         height: '50px',
@@ -46,7 +46,7 @@
       <br>
       <span>卡顿说明：</span>
       <p>&nbsp; &nbsp; 由于没写详细逻辑去优化元素的父子关系树，所以目前会出现渲染卡顿</p>
-      <hr>
+      <hr> -->
       <MessageDisplay />
     </div>
 
