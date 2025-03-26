@@ -13,7 +13,8 @@
 * - Vue 3.x
 *
 * @example
-*  <DivEditor ref="editorRef" v-model:divs="divs" @undo="undo" @redo="redo" @update:divs="onDivsUpdated" />
+*
+<DivEditor ref="editorRef" v-model:divs="divs" @undo="undo" @redo="redo" @update:divs="onDivsUpdated" />
 */
 
 
@@ -56,9 +57,9 @@
         selected: selectedDivIds.includes(div.id),
         parent: hasChildren(div.id),
       }" :style="getDivStyle(div)" :data-id="div.id" :ref="(el) => {
-            if (el) divRefs[div.id] = el;
-          }
-          ">
+        if (el) divRefs[div.id] = el;
+      }
+        ">
         <div v-if="selectedDivIds.includes(div.id)" class="resize-handle top-left"
           @mousedown.stop="startResize(div.id, 'top-left', $event)"></div>
         <div v-if="selectedDivIds.includes(div.id)" class="resize-handle top-right"
@@ -190,35 +191,71 @@ export default {
 
       for (const child of directChildren) {
         result.push(...getDescendants(child.id));
+        console.log(...getDescendants(child.id));
+
       }
+      console.log(result, 'result', directChildren, divs, divId);
 
       return result;
     };
 
     // 辅助函数：递归移动所有子元素
     // 修改移动子元素的方法，确保只根据初始记录的位置计算移动
-    const moveChildrenWithParent = (parentId, deltaX, deltaY) => {
-      const childDivs = divs.value.filter((div) => div.parentId === parentId);
-
-      for (const childDiv of childDivs) {
-        // 只使用初始位置加上偏移量，避免累积效应
-        if (dragStartPositions.value[childDiv.id]) {
-          childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
-          childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
-        } else {
-          // 替换为：记录当前位置作为起始位置
-          dragStartPositions.value[childDiv.id] = {
-            x: childDiv.x,
-            y: childDiv.y,
-          };
-          childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
-          childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
-        }
-
-        // 递归处理子元素
-        moveChildrenWithParent(childDiv.id, deltaX, deltaY);
-      }
-    };
+// 移动子元素时传递实际移动距离，而不是原始偏移量
+const moveChildrenWithParent = (parentId, deltaX, deltaY,event) => {
+  console.log(`移动元素 ID:${parentId} 的子元素，偏移量：${deltaX} x ${deltaY}`);
+  
+  // 确保有效的移动量
+  if (deltaX === 0 && deltaY === 0) return;
+  // console.log(event,'shubiao');
+  
+  
+  const childDivs = divs.value.filter((div) => div.parentId === parentId);
+  console.log('fin',childDivs);
+  
+  
+  for (const childDiv of childDivs) {
+    // 记录移动前的位置
+    // eslint-disable-next-line no-unused-vars
+    const oldX = childDiv.x;
+    // eslint-disable-next-line no-unused-vars
+    const oldY = childDiv.y;
+    
+    // 更新位置（使用初始位置或当前位置）
+    if (dragStartPositions.value[childDiv.id]) {
+      childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
+      childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
+    } else {
+      dragStartPositions.value[childDiv.id] = { x: childDiv.x, y: childDiv.y };
+      childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
+      childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
+    }
+    
+    // 应用边界限制
+    const parent = divs.value.find(d => d.id === childDiv.parentId);
+    if (parent) {
+      const minX = parent.x;
+      const minY = parent.y;
+      const maxX = parent.width - childDiv.width + parent.x;
+      const maxY = parent.height - childDiv.height + parent.y;
+      
+      // 应用限制
+      childDiv.x = Math.max(minX, Math.min(maxX, childDiv.x));
+      childDiv.y = Math.max(minY, Math.min(maxY, childDiv.y));
+    }
+    
+    console.log(`移动元素 ID:${childDiv.id} 的子元素，查找子元素...`);
+    
+    // 明确检查此元素是否有自己的子元素
+    const grandChildrenCount = divs.value.filter(d => d.parentId === childDiv.id).length;
+    
+    if (grandChildrenCount > 0) {
+      console.log(`元素 ID:${childDiv.id} 有 ${grandChildrenCount} 个子元素，递归处理...`);
+      // 使用相同的偏移量递归处理子元素
+      moveChildrenWithParent(childDiv.id, deltaX, deltaY,event);
+    }
+  }
+};
 
     const saveStateForUndo = () => {
       undoStack.value.push(JSON.parse(JSON.stringify(divs.value)));
@@ -351,10 +388,14 @@ export default {
         const deltaX = event.clientX - dragStartX.value;
         const deltaY = event.clientY - dragStartY.value;
 
+        console.log(2222,deltaX,deltaY);
+        
+
         // 首先处理被直接拖动的元素
         for (const id of draggedDivIds.value) {
           const div = divs.value.find((d) => d.id === id);
           if (!div) continue;
+          console.log(div, "div");
 
           if (div.parentId !== null && !isCtrlPressed.value) {
             const parent = divs.value.find((d) => d.id === div.parentId);
@@ -405,7 +446,10 @@ export default {
             div.y = dragStartPositions.value[id].y + deltaY;
 
             // 如果是父元素在移动，所有子元素必须跟着移动
-            moveChildrenWithParent(id, deltaX, deltaY);
+            // moveChildrenWithParent(id, deltaX, deltaY);
+          }
+          if (hasChildren(id)) {
+            moveChildrenWithParent(id, deltaX, deltaY,event);
           }
         }
       } else if (isResizing.value) {
@@ -515,12 +559,16 @@ export default {
                 (potentialParent) =>
                   potentialParent.id !== id &&
                   !getDescendants(id).includes(potentialParent)
-              );
+              ).reverse();
+              console.log(potentialParents, "potentialParents");
+
 
               // 检查是否在某个元素内部
               for (const potentialParent of potentialParents) {
                 const parentEl = divRefs[potentialParent.id];
                 const divEl = divRefs[div.id];
+                console.log(parentEl, divEl, 3154);
+
 
                 if (!parentEl || !divEl) continue;
 
