@@ -713,7 +713,7 @@ export default {
       }
 
       // 如果元素被选中，给更高优先级
-      const selectionBonus = selectedDivIds.value.includes(div.id) ? 1000 : 0;
+      // const selectionBonus = selectedDivIds.value.includes(div.id) ? 1000 : 0;
 
       return {
         position: "absolute",
@@ -726,7 +726,9 @@ export default {
         border: "1px solid #888",
         boxSizing: "border-box",
         overflow: "visible",
-        zIndex: baseZIndex + selectionBonus,
+        zIndex: baseZIndex 
+        // + selectionBonus
+        ,
       };
     };
 
@@ -845,7 +847,7 @@ export default {
 
 .canvas-element.selected {
   outline: 2px solid blue;
-  z-index: 1000 !important;
+ 
 }
 
 .canvas-element.parent {
