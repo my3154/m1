@@ -201,37 +201,28 @@ export default {
 
     // 辅助函数：递归移动所有子元素
     // 修改移动子元素的方法，确保只根据初始记录的位置计算移动
-// 移动子元素时传递实际移动距离，而不是原始偏移量
-const moveChildrenWithParent = (parentId, deltaX, deltaY,event) => {
-  console.log(`移动元素 ID:${parentId} 的子元素，偏移量：${deltaX} x ${deltaY}`);
-  
+    // 移动子元素时传递实际移动距离，而不是原始偏移量
+    const moveChildrenWithParent = (parentId, originalDeltaX, originalDeltaY) => {
   // 确保有效的移动量
-  if (deltaX === 0 && deltaY === 0) return;
-  // console.log(event,'shubiao');
-  
+  if (originalDeltaX === 0 && originalDeltaY === 0) return;
   
   const childDivs = divs.value.filter((div) => div.parentId === parentId);
-  console.log('fin',childDivs);
-  
   
   for (const childDiv of childDivs) {
     // 记录移动前的位置
-    // eslint-disable-next-line no-unused-vars
     const oldX = childDiv.x;
-    // eslint-disable-next-line no-unused-vars
     const oldY = childDiv.y;
     
-    // 更新位置（使用初始位置或当前位置）
-    if (dragStartPositions.value[childDiv.id]) {
-      childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
-      childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
-    } else {
+    // 计算基于原始移动意图的"期望位置"
+    if (!dragStartPositions.value[childDiv.id]) {
       dragStartPositions.value[childDiv.id] = { x: childDiv.x, y: childDiv.y };
-      childDiv.x = dragStartPositions.value[childDiv.id].x + deltaX;
-      childDiv.y = dragStartPositions.value[childDiv.id].y + deltaY;
     }
     
-    // 应用边界限制
+    // 首先计算期望位置 - 反映原始移动意图
+    let desiredX = dragStartPositions.value[childDiv.id].x + originalDeltaX;
+    let desiredY = dragStartPositions.value[childDiv.id].y + originalDeltaY;
+    
+    // 然后应用边界限制得到实际位置
     const parent = divs.value.find(d => d.id === childDiv.parentId);
     if (parent) {
       const minX = parent.x;
@@ -239,20 +230,25 @@ const moveChildrenWithParent = (parentId, deltaX, deltaY,event) => {
       const maxX = parent.width - childDiv.width + parent.x;
       const maxY = parent.height - childDiv.height + parent.y;
       
-      // 应用限制
-      childDiv.x = Math.max(minX, Math.min(maxX, childDiv.x));
-      childDiv.y = Math.max(minY, Math.min(maxY, childDiv.y));
+      childDiv.x = Math.max(minX, Math.min(maxX, desiredX));
+      childDiv.y = Math.max(minY, Math.min(maxY, desiredY));
+    } else {
+      childDiv.x = desiredX;
+      childDiv.y = desiredY;
     }
     
-    console.log(`移动元素 ID:${childDiv.id} 的子元素，查找子元素...`);
+    // 计算此元素的实际移动量（用于调试）
+    // eslint-disable-next-line no-unused-vars
+    const actualDeltaX = childDiv.x - oldX;
+    // eslint-disable-next-line no-unused-vars
+    const actualDeltaY = childDiv.y - oldY;
     
-    // 明确检查此元素是否有自己的子元素
-    const grandChildrenCount = divs.value.filter(d => d.parentId === childDiv.id).length;
-    
-    if (grandChildrenCount > 0) {
-      console.log(`元素 ID:${childDiv.id} 有 ${grandChildrenCount} 个子元素，递归处理...`);
-      // 使用相同的偏移量递归处理子元素
-      moveChildrenWithParent(childDiv.id, deltaX, deltaY,event);
+    // 关键改变：递归时传递原始移动意图，而不是实际移动量
+    // 这样内部子元素能继续按原始意图在父元素内移动
+    const hasChildren = divs.value.some(d => d.parentId === childDiv.id);
+    if (hasChildren) {
+      // 始终传递原始移动意图
+      moveChildrenWithParent(childDiv.id, originalDeltaX, originalDeltaY);
     }
   }
 };
@@ -385,11 +381,11 @@ const moveChildrenWithParent = (parentId, deltaX, deltaY,event) => {
       if (!isDragging.value && !isResizing.value && !isRotating.value) return;
 
       if (isDragging.value) {
-        const deltaX = event.clientX - dragStartX.value;
-        const deltaY = event.clientY - dragStartY.value;
+        let deltaX = event.clientX - dragStartX.value;
+        let deltaY = event.clientY - dragStartY.value;
 
-        console.log(2222,deltaX,deltaY);
-        
+        console.log(2222, deltaX, deltaY);
+
 
         // 首先处理被直接拖动的元素
         for (const id of draggedDivIds.value) {
@@ -449,7 +445,12 @@ const moveChildrenWithParent = (parentId, deltaX, deltaY,event) => {
             // moveChildrenWithParent(id, deltaX, deltaY);
           }
           if (hasChildren(id)) {
-            moveChildrenWithParent(id, deltaX, deltaY,event);
+            const childDivs = divs.value.filter((div) => div.parentId === id);
+
+            const divNow = divs.value.filter((div) => div.id === id);
+            const divFa = divs.value.filter((div) => div.id === divNow[0].parentId);
+            console.log('fin', childDivs, divs.value, divNow, divFa, divNow[0].x);
+            moveChildrenWithParent(id, deltaX, deltaY, event);
           }
         }
       } else if (isResizing.value) {
