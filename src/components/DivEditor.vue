@@ -202,53 +202,48 @@ export default {
     // 辅助函数：递归移动所有子元素
     // 修改移动子元素的方法，确保只根据初始记录的位置计算移动
     // 移动子元素时传递实际移动距离，而不是原始偏移量
+    // eslint-disable-next-line no-unused-vars
     const moveChildrenWithParent = (parentId, originalDeltaX, originalDeltaY) => {
-  // 确保有效的移动量
-  if (originalDeltaX === 0 && originalDeltaY === 0) return;
+  // 获取父元素在移动前的位置
+  const parent = divs.value.find(d => d.id === parentId);
+  if (!parent) return;
+  
+  // 计算父元素的实际移动量
+  const parentStartPos = dragStartPositions.value[parent.id] || { x: parent.x, y: parent.y };
+  const parentActualDeltaX = parent.x - parentStartPos.x;
+  const parentActualDeltaY = parent.y - parentStartPos.y;
+  
+  // 如果父元素没有移动，子元素也不应移动
+  if (parentActualDeltaX === 0 && parentActualDeltaY === 0) return;
   
   const childDivs = divs.value.filter((div) => div.parentId === parentId);
   
   for (const childDiv of childDivs) {
-    // 记录移动前的位置
-    const oldX = childDiv.x;
-    const oldY = childDiv.y;
-    
-    // 计算基于原始移动意图的"期望位置"
+    // 使用父元素的实际移动量来移动子元素
     if (!dragStartPositions.value[childDiv.id]) {
       dragStartPositions.value[childDiv.id] = { x: childDiv.x, y: childDiv.y };
     }
     
-    // 首先计算期望位置 - 反映原始移动意图
-    let desiredX = dragStartPositions.value[childDiv.id].x + originalDeltaX;
-    let desiredY = dragStartPositions.value[childDiv.id].y + originalDeltaY;
+    // 计算子元素基于父元素实际移动量的新位置
+    const childStartPos = dragStartPositions.value[childDiv.id];
+    const newX = childStartPos.x + parentActualDeltaX;
+    const newY = childStartPos.y + parentActualDeltaY;
     
-    // 然后应用边界限制得到实际位置
-    const parent = divs.value.find(d => d.id === childDiv.parentId);
-    if (parent) {
-      const minX = parent.x;
-      const minY = parent.y;
-      const maxX = parent.width - childDiv.width + parent.x;
-      const maxY = parent.height - childDiv.height + parent.y;
-      
-      childDiv.x = Math.max(minX, Math.min(maxX, desiredX));
-      childDiv.y = Math.max(minY, Math.min(maxY, desiredY));
-    } else {
-      childDiv.x = desiredX;
-      childDiv.y = desiredY;
-    }
+    // 确保子元素不会超出父元素边界
+    const minX = parent.x;
+    const minY = parent.y;
+    const maxX = parent.x + parent.width - childDiv.width;
+    const maxY = parent.y + parent.height - childDiv.height;
     
-    // 计算此元素的实际移动量（用于调试）
-    // eslint-disable-next-line no-unused-vars
-    const actualDeltaX = childDiv.x - oldX;
-    // eslint-disable-next-line no-unused-vars
-    const actualDeltaY = childDiv.y - oldY;
+    childDiv.x = Math.max(minX, Math.min(maxX, newX));
+    childDiv.y = Math.max(minY, Math.min(maxY, newY));
     
-    // 关键改变：递归时传递原始移动意图，而不是实际移动量
-    // 这样内部子元素能继续按原始意图在父元素内移动
-    const hasChildren = divs.value.some(d => d.parentId === childDiv.id);
-    if (hasChildren) {
-      // 始终传递原始移动意图
-      moveChildrenWithParent(childDiv.id, originalDeltaX, originalDeltaY);
+    // 递归处理该子元素的子元素，传递该子元素的实际移动量
+    const childActualDeltaX = childDiv.x - childStartPos.x;
+    const childActualDeltaY = childDiv.y - childStartPos.y;
+    
+    if (hasChildren(childDiv.id)) {
+      moveChildrenWithParent(childDiv.id, childActualDeltaX, childActualDeltaY);
     }
   }
 };
