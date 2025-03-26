@@ -39,15 +39,15 @@
       <hr><br>
       <p>&nbsp; &nbsp; 移动父元素后会暂时覆盖其所有的子元素，点击其他地方（退出编辑状态）即可恢复</p><br>
       <hr><br>
-      <!-- <button :style="{
+      <button :style="{
         backgroundColor: 'lightcoral',
         width: '100px',
         height: '50px',
-      }" @click="addRandomElements">添加1w随机元素</button>
+      }" @click="addRandomElements">添加随机元素</button>
       <br>
       <span>卡顿说明：</span>
       <p>&nbsp; &nbsp; 由于没写详细逻辑去优化元素的父子关系树，所以目前会出现渲染卡顿</p>
-      <hr> -->
+      <hr>
       <MessageDisplay />
     </div>
 
@@ -122,14 +122,14 @@ export default {
     const nextId = ref(1);
     const divRefs = reactive({});
     const addRandomElements = () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 700; i++) {
         const randomDiv = {
           id: nextId.value++, // 每次增加唯一的id
           x: Math.floor(Math.random() * 800), // 随机生成位置
           y: Math.floor(Math.random() * 600),
           width: Math.floor(Math.random() * 200) + 50, // 随机生成宽度
           height: Math.floor(Math.random() * 200) + 50, // 随机生成高度
-          rotation: Math.floor(Math.random() * 360), // 随机旋转角度
+          // rotation: Math.floor(Math.random() * 360), // 随机旋转角度
           color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // 随机颜色
           parentId: null, // 设置为null，也可以根据需求修改为父元素
         };
